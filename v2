@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نظام إدارة المحافظ والمالية الشخصية</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts (Cairo) -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- html2pdf.js Library for professional PDF Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+    }
+    /* Scrollbar style */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col lg:flex-row">
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="fixed inset-0 bg-slate-900 bg-opacity-75 z-50 flex flex-col justify-center items-center text-white transition-opacity duration-300">
+    <div class="relative flex items-center justify-center mb-4">
+      <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-emerald-500 border-r-4 border-r-transparent border-solid"></div>
+      <i class="fa-solid fa-vault text-emerald-500 text-xl absolute"></i>
+    </div>
+    <p class="text-lg font-semibold tracking-wide">جاري مزامنة بياناتك المالية...</p>
+  </div>
+
+  <!-- Mobile Header (Visible only on mobile/tablet) -->
+  <header class="lg:hidden bg-slate-900 text-white px-4 py-3 flex justify-between items-center shadow-md">
+    <div class="flex items-center gap-2">
+      <div class="bg-emerald-600 p-2 rounded-lg text-white">
+        <i class="fa-solid fa-wallet text-lg"></i>
+      </div>
+      <span class="font-bold text-md">مستشاري المالي</span>
+    </div>
+    <button onclick="toggleSidebar()" class="text-white hover:text-emerald-500 focus:outline-none p-1 text-xl">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </header>
+
+  <!-- Sidebar (Responsive Layout) -->
+  <aside id="sidebar" class="fixed inset-y-0 right-0 z-40 w-64 bg-slate-900 text-slate-300 flex flex-col justify-between transform translate-x-full lg:translate-x-0 lg:static lg:h-screen transition-transform duration-300 ease-in-out shadow-2xl lg:shadow-none">
+    <div>
+      <!-- Sidebar Header -->
+      <div class="p-6 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="bg-emerald-600 text-white p-2.5 rounded-xl shadow-lg">
+            <i class="fa-solid fa-vault text-xl"></i>
+          </div>
+          <div>
+            <h1 class="text-md font-extrabold text-white">مستشاري المالي</h1>
+            <p class="text-[10px] text-slate-400">إدارة ذكية وثروة مستدامة</p>
+          </div>
+        </div>
+        <button onclick="toggleSidebar()" class="lg:hidden text-slate-400 hover:text-white text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Navigation Menus -->
+      <nav class="p-4 space-y-1.5">
+        <p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold px-3 mb-2">الرئيسية</p>
+        <button onclick="switchTab('dashboard')" id="btn-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 bg-emerald-600 text-white shadow-lg shadow-emerald-900/20">
+          <i class="fa-solid fa-chart-pie text-base"></i> لوحة التحكم
+        </button>
+
+        <p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold px-3 pt-4 mb-2">العمليات والخدمات</p>
+        <button onclick="switchTab('deposit')" id="btn-deposit" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-200">
+          <i class="fa-solid fa-circle-arrow-down text-emerald-500 text-base"></i> إيداع أموال / إيراد
+        </button>
+        <button onclick="switchTab('expense')" id="btn-expense" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-200">
+          <i class="fa-solid fa-circle-arrow-up text-rose-500 text-base"></i> تسجيل مصروف
+        </button>
+        <button onclick="switchTab('transfer')" id="btn-transfer" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-200">
+          <i class="fa-solid fa-right-left text-blue-500 text-base"></i> تحويل بين المحافظ
+        </button>
+
+        <p class="text-[10px] uppercase tracking-wider text-slate-500 font-bold px-3 pt-4 mb-2">التحليلات والمحفظة</p>
+        <button onclick="switchTab('reports')" id="btn-reports" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-200">
+          <i class="fa-solid fa-file-invoice-dollar text-base"></i> كشف الحساب والتقارير
+        </button>
+        <button onclick="switchTab('new-wallet')" id="btn-new-wallet" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-200">
+          <i class="fa-solid fa-folder-plus text-base"></i> تأسيس محفظة جديدة
+        </button>
+      </nav>
+    </div>
+
+    <!-- Sidebar Footer -->
+    <div class="p-4 border-t border-slate-800 text-center">
+      <p class="text-[10px] text-slate-500">تمت المزامنة بنجاح مع Google Sheets</p>
+    </div>
+  </aside>
+
+  <!-- Main Content Body -->
+  <div class="flex-grow flex flex-col h-screen overflow-y-auto w-full">
+    
+    <main class="flex-grow p-4 lg:p-8 max-w-7xl w-full mx-auto space-y-8">
+      
+      <!-- Toast Alert Notifications -->
+      <div id="toast" class="hidden fixed bottom-5 left-5 bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl z-50 flex items-center gap-3 transition-all duration-300 border border-slate-800">
+        <span id="toastIcon" class="text-lg"></span>
+        <span id="toastMessage" class="text-sm font-semibold"></span>
+      </div>
+
+      <!-- 1. DASHBOARD TAB -->
+      <section id="tab-dashboard" class="tab-content space-y-8">
+        <!-- Overview Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex justify-between items-center transition-all hover:shadow-md">
+            <div>
+              <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">الرصيد الإجمالي الحالي</p>
+              <h3 class="text-3xl font-extrabold text-slate-800 mt-2" id="stat-total-balance">0.00 ر.س</h3>
+            </div>
+            <div class="bg-emerald-50 text-emerald-600 p-4 rounded-2xl"><i class="fa-solid fa-scale-balanced text-2xl"></i></div>
+          </div>
+          <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex justify-between items-center transition-all hover:shadow-md">
+            <div>
+              <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">مجموع الإيداعات</p>
+              <h3 class="text-3xl font-extrabold text-emerald-600 mt-2" id="stat-total-deposits">0.00 ر.س</h3>
+            </div>
+            <div class="bg-emerald-50 text-emerald-500 p-4 rounded-2xl"><i class="fa-solid fa-square-arrow-up-right text-2xl"></i></div>
+          </div>
+          <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex justify-between items-center transition-all hover:shadow-md">
+            <div>
+              <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">مجموع المصروفات</p>
+              <h3 class="text-3xl font-extrabold text-rose-600 mt-2" id="stat-total-expenses">0.00 ر.س</h3>
+            </div>
+            <div class="bg-rose-50 text-rose-500 p-4 rounded-2xl"><i class="fa-solid fa-square-arrow-down-left text-2xl"></i></div>
+          </div>
+        </div>
+
+        <!-- Wallets Section -->
+        <div>
+          <h2 class="text-lg font-extrabold text-slate-800 mb-5 flex items-center gap-2"><i class="fa-solid fa-wallet text-emerald-600"></i>محافظك النشطة</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="walletsContainer">
+            <!-- Loaded dynamically with unique gradient backgrounds -->
+          </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+          <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+            <h2 class="text-lg font-extrabold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-list text-emerald-600"></i>جدول آخر العمليات المالية</h2>
+            <div class="flex gap-2">
+              <button onclick="switchTab('deposit')" class="text-xs bg-emerald-50 text-emerald-700 font-bold px-3 py-2 rounded-lg hover:bg-emerald-100 transition-all"><i class="fa-solid fa-plus ml-1"></i> إيداع</button>
+              <button onclick="switchTab('expense')" class="text-xs bg-rose-50 text-rose-700 font-bold px-3 py-2 rounded-lg hover:bg-rose-100 transition-all"><i class="fa-solid fa-minus ml-1"></i> مصروف</button>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-right border-collapse">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-100 text-slate-400 text-[11px] font-bold uppercase tracking-wider">
+                  <th class="p-5">التاريخ</th>
+                  <th class="p-5">النوع</th>
+                  <th class="p-5">المحفظة</th>
+                  <th class="p-5">الفئة التصنيفية</th>
+                  <th class="p-5">ملاحظات</th>
+                  <th class="p-5 text-left">المبلغ الاجمالي</th>
+                </tr>
+              </thead>
+              <tbody id="recentTransactionsTable" class="text-slate-600">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. DEPOSIT TAB (صداقة وسهولة) -->
+      <section id="tab-deposit" class="tab-content hidden max-w-xl mx-auto">
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+          <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+            <div class="bg-emerald-500 text-white p-3 rounded-2xl shadow-md"><i class="fa-solid fa-circle-arrow-down text-xl"></i></div>
+            <div>
+              <h2 class="text-lg font-extrabold text-slate-800">إيداع جديد / إدخال إيراد</h2>
+              <p class="text-xs text-slate-400">سجل الإيرادات والرواتب المباشرة لمحفظتك</p>
+            </div>
+          </div>
+          <form id="depositForm" onsubmit="handleDepositSubmit(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-2">إيداع إلى محفظة</label>
+              <select name="txWallet" required class="w-full p-4 border border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none font-semibold text-slate-700 wallet-selects"></select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-2">مبلغ الإيداع (ر.س)</label>
+              <input type="number" step="0.01" name="txAmount" required placeholder="0.00" class="w-full p-4 border border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-xl text-emerald-600">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-2">فئة الإيراد</label>
+              <select name="txCategory" id="depositCategory" required class="w-full p-4 border border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none font-semibold text-slate-700"></select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-2">ملاحظات الإيداع</label>
+              <input type="text" name="txDescription" placeholder="مثال: الراتب الشهري أو استحقاق إيراد مالي" class="w-full p-4 border border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+            </div>
+            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-emerald-600/10 hover:shadow-emerald-600/20 mt-4">تأكيد عملية الإيداع</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- 3. EXPENSE TAB -->
+      <section id="tab-expense" class="tab-content hidden max-w-xl mx-auto">
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+          <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+            <div class="bg-rose-500 text-white p-3 rounded-2xl shadow-md"><i class="fa-solid fa-circle-arrow-up text-xl"></i></div>
+            <div>
+              <h2 class="text-lg font-extrabold text-slate-800">تسجيل نفقات ومصروفات</h2>
+              <p class="text-xs text-slate-400">تتبع مصاريفك ووزعها بشكل دقيق بين التصنيفات</p>
+            </div>
+          </div>
+          <form id="expenseForm" onsubmit="handleExpenseSubmit(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-2">الصرف من محفظة</label>
+              <select name="txWallet" required class="w-full p-4 border border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-rose-500 outline-none font-semibold text-slate-700 wallet-selects"></select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-2">مبلغ المصروف (ر.س)</label>
+              <input type="number" step="0.01" name="txAmount" required placeholder="0.00" class="w-full p-4 border border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-rose-500 outline-none font-bold text-xl text-rose-600">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-2">فئة المصروف</label>
+              <select name="txCategory" id="expenseCategory" required class="w-full p-4 border border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-rose-500 outline-none font-semibold text-slate-700"></select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-2">ملاحظات المصروف</label>
+              <input type="text" name="txDescription" placeholder="مثال: فاتورة الكهرباء أو تسوق أغذية منزلية" class="w-full p-4 border border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-rose-500 outline-none text-sm">
+            </div>
+            <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-rose-600/10 hover:shadow-rose-600/20 mt-4">حفظ المصروف المالي</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- 4. TRANSFER TAB -->
+      <section id="tab-transfer" class="tab-content hidden max-w-xl mx-auto">
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+          <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+            <div class="bg-blue-500 text-white p-3 rounded-2xl shadow-md"><i class="fa-solid fa-right-left text-xl"></i></div>
+            <div>
+              <h2 class="text-lg font-extrabold text-slate-800">تحويل داخلي بين المحافظ</h2>
+              <p class="text-xs text-slate-400">انقل رصيداً مالياً من محفظة إلى أخرى بمرونة تامة</p>
+            </div>
+          </div>
+          <form id="transferForm" onsubmit="handleTransferSubmit(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-2">من محفظة (المصدر)</label>
+              <select name="tfFrom" id="tfFrom" required class="w-full p-4 border border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-semibold text-slate-700 wallet-selects"></select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-2">إلى محفظة (الوجهة)</label>
+              <select name="tfTo" id="tfTo" required class="w-full p-4 border border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-semibold text-slate-700 wallet-selects"></select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-2">المبلغ المراد تحويله (ر.س)</label>
+              <input type="number" step="0.01" name="tfAmount" required placeholder="0.00" class="w-full p-4 border border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-bold text-xl text-blue-600">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-2">ملاحظات وسبب التحويل</label>
+              <input type="text" name="tfDescription" placeholder="ملاحظات حول عملية التحويل الداخلي" class="w-full p-4 border border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+            </div>
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-blue-600/10 hover:shadow-blue-600/20 mt-4">تنفيذ عملية التحويل</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- 5. REPORTS & STATEMENT TAB (تحديث التصدير إلى PDF احترافي) -->
+      <section id="tab-reports" class="tab-content hidden space-y-6">
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-extrabold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-magnifying-glass-chart text-emerald-600"></i>محرك كشف الحساب والتقارير المالية</h2>
+            <p class="text-xs text-slate-400">قم بتحليل ميزانيتك ومصروفاتك وصدر كشفا رسمياً بصيغة PDF</p>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            <select id="reportWalletFilter" onchange="renderStatementAndReport()" class="p-3.5 border border-slate-100 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-slate-700 bg-slate-50 text-sm"></select>
+            <button onclick="exportToPDF()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-5 py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-slate-900/10">
+              <i class="fa-solid fa-file-pdf text-rose-500 text-base"></i> تصدير كشف الحساب (PDF)
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Doughnut Chart Area -->
+          <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 lg:col-span-1 flex flex-col justify-between">
+            <h3 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-1.5"><i class="fa-solid fa-chart-pie text-emerald-600"></i>مخطط تصنيفات المصروفات</h3>
+            <div class="relative w-full h-64 flex justify-center items-center">
+              <canvas id="expensesChart"></canvas>
+              <div id="noChartData" class="hidden absolute inset-0 flex flex-col items-center justify-center text-slate-400 bg-white rounded-3xl">
+                <i class="fa-solid fa-chart-line text-4xl mb-2 text-slate-300"></i>
+                <p class="text-xs font-semibold">لا يوجد مصروفات لتحليلها بيانياً</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Statement Ledger Table Area -->
+          <div class="bg-white rounded-3xl shadow-sm border border-slate-100 lg:col-span-2 overflow-hidden flex flex-col">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5"><i class="fa-solid fa-receipt text-emerald-600"></i>كشف حركة الحساب التفصيلي</h3>
+              <span class="text-xs font-bold px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full" id="statementWalletName">المحفظة</span>
+            </div>
+            <div class="overflow-x-auto flex-grow max-h-[350px]">
+              <table class="w-full text-right border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-100 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                    <th class="p-4">التاريخ</th>
+                    <th class="p-4">النوع</th>
+                    <th class="p-4">الفئة</th>
+                    <th class="p-4">البيان</th>
+                    <th class="p-4 text-left">المبلغ الاجمالي</th>
+                  </tr>
+                </thead>
+                <tbody id="statementTableBody" class="text-slate-600">
+                  <!-- Loaded dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. NEW WALLET TAB -->
+      <section id="tab-new-wallet" class="tab-content hidden max-w-xl mx-auto">
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
+          <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+            <div class="bg-emerald-500 text-white p-3 rounded-2xl shadow-md"><i class="fa-solid fa-folder-plus text-xl"></i></div>
+            <div>
+              <h2 class="text-lg font-extrabold text-slate-800">تأسيس محفظة مالية جديدة</h2>
+              <p class="text-xs text-slate-400">أنشئ ركيزة ادخارية جديدة مخصصة لأغراض مالية مستقلة</p>
+            </div>
+          </div>
+          <form id="walletForm" onsubmit="handleWalletSubmit(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-2">اسم المحفظة</label>
+              <input type="text" name="walletName" required placeholder="مثال: الحساب الجاري، بطاقة السفر، كاش الطوارئ" class="w-full p-4 border border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none text-sm font-semibold">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-2">رصيد التأسيس الافتتاحي (ر.س)</label>
+              <input type="number" step="0.01" name="walletInitial" placeholder="0.00" class="w-full p-4 border border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-lg text-emerald-600">
+            </div>
+            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-emerald-600/10 hover:shadow-emerald-600/20 mt-4">تأكيد تأسيس المحفظة</button>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Hidden Container dynamically built and styled exclusively for PDF generation -->
+  <div class="hidden">
+    <div id="pdfPrintTemplate" dir="rtl" class="p-8 bg-white text-slate-800" style="font-family: 'Cairo', sans-serif;">
+      <!-- PDF Header -->
+      <div class="flex justify-between items-center border-b-2 border-emerald-600 pb-6 mb-6">
+        <div>
+          <h1 class="text-2xl font-black text-emerald-700">مستشاري المالي</h1>
+          <p class="text-xs text-slate-400 mt-1">كشف حركة حساب مالي رسمي وموحد</p>
+        </div>
+        <div class="text-left">
+          <p class="text-xs text-slate-400">تاريخ إصدار الكشف</p>
+          <p class="text-sm font-bold text-slate-700 mt-1" id="pdfDate"></p>
+        </div>
+      </div>
+
+      <!-- Wallet info summary in PDF -->
+      <div class="bg-slate-50 rounded-2xl p-6 mb-8 grid grid-cols-3 gap-4 border border-slate-100">
+        <div>
+          <p class="text-[10px] text-slate-400 font-bold">اسم المحفظة</p>
+          <p class="text-md font-bold text-slate-800 mt-1" id="pdfWalletName"></p>
+        </div>
+        <div>
+          <p class="text-[10px] text-slate-400 font-bold">إجمالي التدفقات المضافة</p>
+          <p class="text-md font-bold text-emerald-600 mt-1" id="pdfTotalIncoming"></p>
+        </div>
+        <div>
+          <p class="text-[10px] text-slate-400 font-bold">إجمالي التدفقات الخارجة</p>
+          <p class="text-md font-bold text-rose-600 mt-1" id="pdfTotalOutgoing"></p>
+        </div>
+      </div>
+
+      <!-- Ledger Table inside PDF -->
+      <table class="w-full text-right border-collapse">
+        <thead>
+          <tr class="bg-emerald-700 text-white text-xs font-bold">
+            <th class="p-3 border border-emerald-600 rounded-r-lg">التاريخ</th>
+            <th class="p-3 border border-emerald-600">النوع</th>
+            <th class="p-3 border border-emerald-600">التصنيف</th>
+            <th class="p-3 border border-emerald-600">البيان والملاحظات</th>
+            <th class="p-3 border border-emerald-600 text-left rounded-l-lg">المبلغ</th>
+          </tr>
+        </thead>
+        <tbody id="pdfTableBody" class="text-slate-700 text-xs">
+          <!-- Filled dynamically during PDF generation -->
+        </tbody>
+      </table>
+
+      <!-- Footer for PDF -->
+      <div class="mt-12 pt-6 border-t border-slate-100 text-center text-[10px] text-slate-400">
+        <p>تم استخراج هذا الكشف آلياً ومزامنته عبر النظام المالي المرتبط بحساب Google Sheets الخاص بك.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // ⚠️ رابط تطبيق الويب الخاص بـ Google Script ⚠️
+    // ==========================================
+    const API_URL = "https://script.google.com/macros/s/AKfycbz6hUc7EKDklxSgC9Hg_PxHNlaO6sPURR2SkpnKWBuQjFEH_KQG87PId4z6T__R2KQjkg/exec";
+
+    // State management
+    let state = {
+      wallets: [],
+      transactions: []
+    };
+
+    const INCOME_CATEGORIES = ["راتب", "عمل حر", "استثمارات", "تحويل داخلي", "بيع أصول", "أخرى"];
+    const EXPENSE_CATEGORIES = ["سكن وإيجار", "طعام ومواد غذائية", "مواصلات وبنزين", "فواتير وخدمات", "ترفيه وسفر", "صحة وأدوية", "رسوم إقامة", "أخرى"];
+
+    let chartInstance = null;
+
+    // Run on startup
+    window.addEventListener('DOMContentLoaded', () => {
+      if (API_URL.includes("xxxxxxxxx")) {
+        showLoading(false);
+        showToast("يرجى التأكد من إضافة رابط API الخاص بجوجل.", false);
+        return;
+      }
+      loadState();
+      populateStaticCategories();
+    });
+
+    function showLoading(show) {
+      document.getElementById('loadingOverlay').style.opacity = show ? "1" : "0";
+      document.getElementById('loadingOverlay').style.display = show ? "flex" : "none";
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('translate-x-full');
+    }
+
+    function showToast(message, isSuccess = true) {
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toastIcon');
+      const msg = document.getElementById('toastMessage');
+      
+      msg.textContent = message;
+      if (isSuccess) {
+        toast.className = "fixed bottom-5 left-5 bg-emerald-900 border border-emerald-800 text-emerald-100 px-6 py-4 rounded-2xl shadow-2xl z-50 flex items-center gap-3 transition-all duration-300";
+        icon.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
+      } else {
+        toast.className = "fixed bottom-5 left-5 bg-rose-900 border border-rose-800 text-rose-100 px-6 py-4 rounded-2xl shadow-2xl z-50 flex items-center gap-3 transition-all duration-300";
+        icon.innerHTML = '<i class="fa-solid fa-circle-exclamation text-rose-400"></i>';
+      }
+      
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 5000);
+    }
+
+    // Call API using POST fetch
+    async function apiRequest(action, data = {}) {
+      const payload = { action, ...data };
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        const resData = await response.json();
+        if (!resData.success) {
+          throw new Error(resData.error || "حدث خطأ غير متوقع بالخادم");
+        }
+        return resData.data;
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
+    }
+
+    function loadState() {
+      showLoading(true);
+      apiRequest("getData")
+        .then(data => {
+          state = data;
+          renderUI();
+          showLoading(false);
+        })
+        .catch(err => {
+          showLoading(false);
+          showToast("خطأ أثناء مزامنة البيانات: " + err.message, false);
+        });
+    }
+
+    // Populate category fields
+    function populateStaticCategories() {
+      const depositCat = document.getElementById('depositCategory');
+      const expenseCat = document.getElementById('expenseCategory');
+      
+      depositCat.innerHTML = '';
+      INCOME_CATEGORIES.forEach(cat => {
+        depositCat.innerHTML += `<option value="${cat}">${cat}</option>`;
+      });
+
+      expenseCat.innerHTML = '';
+      EXPENSE_CATEGORIES.forEach(cat => {
+        expenseCat.innerHTML += `<option value="${cat}">${cat}</option>`;
+      });
+    }
+
+    // Elegant SPA navigation switcher
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.className = "nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-200";
+      });
+
+      const activeBtn = document.getElementById(`btn-${tabId}`);
+      if (activeBtn) {
+        activeBtn.className = "nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all duration-200 bg-emerald-600 text-white shadow-lg shadow-emerald-950/30";
+      }
+
+      // Hide sidebar on mobile after choosing a section
+      const sidebar = document.getElementById('sidebar');
+      if (!sidebar.classList.contains('translate-x-full')) {
+        sidebar.classList.add('translate-x-full');
+      }
+
+      if (tabId === 'reports') {
+        renderStatementAndReport();
+      }
+    }
+
+    function renderUI() {
+      renderDashboardStats();
+      renderWallets();
+      renderRecentTransactions();
+      populateDropdowns();
+    }
+
+    function renderDashboardStats() {
+      let totalBalance = 0;
+      let totalDeposits = 0;
+      let totalExpenses = 0;
+
+      state.wallets.forEach(w => totalBalance += w.balance);
+      
+      state.transactions.forEach(tx => {
+        if (tx.type === 'إيداع') totalDeposits += tx.amount;
+        if (tx.type === 'مصروف') totalExpenses += tx.amount;
+      });
+
+      document.getElementById('stat-total-balance').textContent = formatCurrency(totalBalance);
+      document.getElementById('stat-total-deposits').textContent = formatCurrency(totalDeposits);
+      document.getElementById('stat-total-expenses').textContent = formatCurrency(totalExpenses);
+    }
+
+    // High quality dynamic card palette colors
+    const CARD_GRADIENTS = [
+      "from-slate-900 to-slate-800",
+      "from-emerald-700 to-teal-900",
+      "from-indigo-900 to-blue-800",
+      "from-slate-800 to-slate-900",
+      "from-emerald-800 to-teal-950"
+    ];
+
+    function renderWallets() {
+      const container = document.getElementById('walletsContainer');
+      container.innerHTML = '';
+
+      if (state.wallets.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full bg-white border border-dashed border-slate-200 rounded-3xl p-10 text-center text-slate-400">
+            <i class="fa-solid fa-box-open text-5xl mb-4 text-slate-300"></i>
+            <p class="font-semibold text-slate-500">لا توجد أي محافظ مضافة حالياً</p>
+            <p class="text-xs mt-1 text-slate-400">توجه إلى "تأسيس محفظة جديدة" للبدء</p>
+          </div>`;
+        return;
+      }
+
+      state.wallets.forEach((w, idx) => {
+        const gradient = CARD_GRADIENTS[idx % CARD_GRADIENTS.length];
+        container.innerHTML += `
+          <div class="bg-gradient-to-br ${gradient} text-white rounded-3xl p-6 shadow-xl relative overflow-hidden flex flex-col justify-between h-48 transition-all hover:-translate-y-1 hover:shadow-2xl">
+            <div class="absolute -right-12 -bottom-12 opacity-10 text-[160px]">
+              <i class="fa-solid fa-wallet"></i>
+            </div>
+            <div class="flex justify-between items-start z-10">
+              <div>
+                <p class="text-[10px] text-slate-300 font-bold uppercase tracking-wider">رصيد البطاقة</p>
+                <h4 class="text-3xl font-black mt-2 tracking-wide">${formatCurrency(w.balance)}</h4>
+              </div>
+              <span class="bg-white/15 backdrop-blur-md text-white text-[10px] px-3 py-1 rounded-full font-bold border border-white/10 uppercase tracking-widest">${w.id}</span>
+            </div>
+            <div class="flex justify-between items-end z-10">
+              <div>
+                <h3 class="text-lg font-bold text-white">${w.name}</h3>
+                <p class="text-[9px] text-slate-300 mt-0.5">محفظة نشطة ومحدثة</p>
+              </div>
+              <div class="bg-white/10 p-2 rounded-xl backdrop-blur-sm"><i class="fa-solid fa-microchip text-slate-300 text-lg"></i></div>
+            </div>
+          </div>`;
+      });
+    }
+
+    function renderRecentTransactions() {
+      const tbody = document.getElementById('recentTransactionsTable');
+      tbody.innerHTML = '';
+
+      const recent = state.transactions.slice(0, 8);
+
+      if (recent.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-10 text-center text-slate-400 font-medium">لا توجد عمليات مسجلة باللوحة حتى الآن.</td></tr>`;
+        return;
+      }
+
+      recent.forEach(tx => {
+        let typeBadge = '';
+        let amountClass = '';
+        let sign = '';
+        let direction = '';
+
+        if (tx.type === 'إيداع') {
+          typeBadge = '<span class="bg-emerald-50 text-emerald-700 text-xs px-2.5 py-1 rounded-full font-bold flex items-center justify-center gap-1.5 w-max"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>إيداع</span>';
+          amountClass = 'text-emerald-600';
+          sign = '+';
+          direction = getWalletName(tx.toWallet);
+        } else if (tx.type === 'مصروف') {
+          typeBadge = '<span class="bg-rose-50 text-rose-700 text-xs px-2.5 py-1 rounded-full font-bold flex items-center justify-center gap-1.5 w-max"><span class="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse"></span>مصروف</span>';
+          amountClass = 'text-rose-600';
+          sign = '-';
+          direction = getWalletName(tx.fromWallet);
+        } else if (tx.type === 'تحويل') {
+          typeBadge = '<span class="bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-full font-bold flex items-center justify-center gap-1.5 w-max"><span class="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse"></span>تحويل</span>';
+          amountClass = 'text-blue-600';
+          sign = '⇄';
+          direction = `${getWalletName(tx.fromWallet)} ← ${getWalletName(tx.toWallet)}`;
+        }
+
+        tbody.innerHTML += `
+          <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors text-xs font-semibold">
+            <td class="p-5 text-slate-400">${formatDate(tx.date)}</td>
+            <td class="p-5">${typeBadge}</td>
+            <td class="p-5 text-slate-700 font-bold">${direction}</td>
+            <td class="p-5 text-slate-500">${tx.category}</td>
+            <td class="p-5 text-slate-400 font-medium max-w-xs truncate">${tx.description || '-'}</td>
+            <td class="p-5 text-left font-extrabold text-sm ${amountClass}">${sign} ${tx.amount.toFixed(2)} ر.س</td>
+          </tr>`;
+      });
+    }
+
+    function populateDropdowns() {
+      const selects = document.querySelectorAll('.wallet-selects');
+      selects.forEach(sel => {
+        sel.innerHTML = '';
+        state.wallets.forEach(w => {
+          sel.innerHTML += `<option value="${w.id}">${w.name} (${w.balance.toFixed(2)} ر.س)</option>`;
+        });
+      });
+
+      const rFilter = document.getElementById('reportWalletFilter');
+      rFilter.innerHTML = `<option value="ALL">جميع المحافظ</option>`;
+      state.wallets.forEach(w => {
+        rFilter.innerHTML += `<option value="${w.id}">${w.name}</option>`;
+      });
+    }
+
+    function renderStatementAndReport() {
+      const walletId = document.getElementById('reportWalletFilter').value;
+      const statementTitle = document.getElementById('statementWalletName');
+      const tbody = document.getElementById('statementTableBody');
+      tbody.innerHTML = '';
+
+      statementTitle.textContent = walletId === "ALL" ? "جميع المحافظ الموحدة" : getWalletName(walletId);
+
+      const filteredTx = state.transactions.filter(tx => {
+        if (walletId === "ALL") return true;
+        return tx.fromWallet === walletId || tx.toWallet === walletId;
+      });
+
+      if (filteredTx.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400 font-medium">لا توجد عمليات مالية مسجلة لهذه المحفظة.</td></tr>`;
+        updateChart({});
+        return;
+      }
+
+      filteredTx.forEach(tx => {
+        let txType = '';
+        let amtClass = '';
+        let sign = '';
+
+        if (tx.type === 'إيداع' || (tx.type === 'تحويل' && tx.toWallet === walletId)) {
+          txType = '<span class="text-emerald-600 font-extrabold"><i class="fa-solid fa-plus-circle ml-1"></i>داخل</span>';
+          amtClass = 'text-emerald-600';
+          sign = '+';
+        } else if (tx.type === 'مصروف' || (tx.type === 'تحويل' && tx.fromWallet === walletId)) {
+          txType = '<span class="text-rose-600 font-extrabold"><i class="fa-solid fa-minus-circle ml-1"></i>خارج</span>';
+          amtClass = 'text-rose-600';
+          sign = '-';
+        }
+
+        tbody.innerHTML += `
+          <tr class="border-b border-slate-50 hover:bg-slate-50/50 text-xs font-semibold">
+            <td class="p-4 text-slate-400">${formatDate(tx.date)}</td>
+            <td class="p-4">${txType}</td>
+            <td class="p-4"><span class="px-2.5 py-1 rounded-full bg-slate-100 text-[10px] text-slate-600 font-bold">${tx.category}</span></td>
+            <td class="p-4 text-slate-500 font-medium max-w-xs truncate">${tx.description || '-'}</td>
+            <td class="p-4 text-left font-extrabold text-sm ${amtClass}">${sign} ${tx.amount.toFixed(2)} ر.س</td>
+          </tr>`;
+      });
+
+      const categoryTotals = {};
+      filteredTx.forEach(tx => {
+        if (tx.type === 'مصروف' || (tx.type === 'تحويل' && tx.fromWallet === walletId)) {
+          categoryTotals[tx.category] = (categoryTotals[tx.category] || 0) + tx.amount;
+        }
+      });
+
+      updateChart(categoryTotals);
+    }
+
+    function updateChart(data) {
+      const keys = Object.keys(data);
+      const vals = Object.values(data);
+      const noDataMsg = document.getElementById('noChartData');
+
+      if (keys.length === 0) {
+        noDataMsg.classList.remove('hidden');
+        if (chartInstance) chartInstance.destroy();
+        return;
+      } else {
+        noDataMsg.classList.add('hidden');
+      }
+
+      const ctx = document.getElementById('expensesChart').getContext('2d');
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      chartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: keys,
+          datasets: [{
+            data: vals,
+            backgroundColor: [
+              '#e11d48', '#3b82f6', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899', '#6366f1', '#14b8a6'
+            ],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              rtl: true,
+              labels: {
+                font: { family: 'Cairo', size: 10, weight: 'bold' },
+                boxWidth: 8,
+                padding: 15
+              }
+            }
+          },
+          cutout: '75%'
+        }
+      });
+    }
+
+    // Export Statement to a Professional PDF using html2pdf
+    function exportToPDF() {
+      const walletId = document.getElementById('reportWalletFilter').value;
+      const filteredTx = state.transactions.filter(tx => {
+        if (walletId === "ALL") return true;
+        return tx.fromWallet === walletId || tx.toWallet === walletId;
+      });
+
+      if (filteredTx.length === 0) {
+        showToast("لا توجد عمليات لتصديرها في ملف الـ PDF المنسق", false);
+        return;
+      }
+
+      showLoading(true);
+
+      // Populate hidden PDF template dynamically
+      document.getElementById('pdfDate').textContent = new Date().toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' });
+      const walletName = walletId === "ALL" ? "جميع المحافظ الموحدة" : getWalletName(walletId);
+      document.getElementById('pdfWalletName').textContent = walletName;
+
+      let incoming = 0;
+      let outgoing = 0;
+
+      const pdfTbody = document.getElementById('pdfTableBody');
+      pdfTbody.innerHTML = '';
+
+      filteredTx.forEach(tx => {
+        let amtSign = '';
+        let txTypeLabel = '';
+        let rowClass = 'border-b border-slate-100';
+
+        if (tx.type === 'إيداع' || (tx.type === 'تحويل' && tx.toWallet === walletId)) {
+          txTypeLabel = "إيداع مالي";
+          amtSign = '+';
+          incoming += tx.amount;
+        } else if (tx.type === 'مصروف' || (tx.type === 'تحويل' && tx.fromWallet === walletId)) {
+          txTypeLabel = "مصروف مالي";
+          amtSign = '-';
+          outgoing += tx.amount;
+        }
+
+        pdfTbody.innerHTML += `
+          <tr class="${rowClass}">
+            <td class="p-3 border-b border-slate-100">${formatDate(tx.date)}</td>
+            <td class="p-3 border-b border-slate-100 font-bold">${txTypeLabel}</td>
+            <td class="p-3 border-b border-slate-100">${tx.category}</td>
+            <td class="p-3 border-b border-slate-100 text-slate-500">${tx.description || '-'}</td>
+            <td class="p-3 border-b border-slate-100 font-bold text-left">${amtSign} ${tx.amount.toFixed(2)} ر.س</td>
+          </tr>`;
+      });
+
+      document.getElementById('pdfTotalIncoming').textContent = formatCurrency(incoming);
+      document.getElementById('pdfTotalOutgoing').textContent = formatCurrency(outgoing);
+
+      // Call html2pdf API to save PDF locally
+      const element = document.getElementById('pdfPrintTemplate');
+      const opt = {
+        margin:       10,
+        filename:     `كشف_حساب_${walletName}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2.5, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      // Generate and save PDF, then hide loading overlay
+      html2pdf().from(element).set(opt).save().then(() => {
+        showLoading(false);
+        showToast("تم توليد وتحميل كشف الحساب بنجاح كملف PDF مخصص");
+      }).catch(err => {
+        showLoading(false);
+        showToast("فشل تصدير ملف PDF: " + err.message, false);
+      });
+    }
+
+    // Submit handlers
+    function handleWalletSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const name = form.walletName.value;
+      const initial = form.walletInitial.value;
+
+      showLoading(true);
+      apiRequest("createWallet", { name, initialBalance: initial })
+        .then(data => {
+          state = data;
+          renderUI();
+          form.reset();
+          showLoading(false);
+          showToast("تم إنشاء المحفظة وتفعيل رصيدها الافتتاحي");
+          switchTab('dashboard');
+        })
+        .catch(err => {
+          showLoading(false);
+          showToast("خطأ: " + err.message, false);
+        });
+    }
+
+    function handleDepositSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const walletId = form.txWallet.value;
+      const amount = form.txAmount.value;
+      const category = form.txCategory.value;
+      const description = form.txDescription.value;
+
+      showLoading(true);
+      apiRequest("addTransaction", { type: "إيداع", walletId, amount, category, description })
+        .then(data => {
+          state = data;
+          renderUI();
+          form.reset();
+          showLoading(false);
+          showToast("تم إيداع المبلغ المذكور في محفظتك بنجاح");
+          switchTab('dashboard');
+        })
+        .catch(err => {
+          showLoading(false);
+          showToast("خطأ أثناء معالجة الإيداع: " + err.message, false);
+        });
+    }
+
+    function handleExpenseSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const walletId = form.txWallet.value;
+      const amount = form.txAmount.value;
+      const category = form.txCategory.value;
+      const description = form.txDescription.value;
+
+      showLoading(true);
+      apiRequest("addTransaction", { type: "مصروف", walletId, amount, category, description })
+        .then(data => {
+          state = data;
+          renderUI();
+          form.reset();
+          showLoading(false);
+          showToast("تم تسجيل المصروف واقتطاعه من المحفظة");
+          switchTab('dashboard');
+        })
+        .catch(err => {
+          showLoading(false);
+          showToast("خطأ أثناء خصم المصروف: " + err.message, false);
+        });
+    }
+
+    function handleTransferSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const fromId = form.tfFrom.value;
+      const toId = form.tfTo.value;
+      const amount = form.tfAmount.value;
+      const desc = form.tfDescription.value;
+
+      showLoading(true);
+      apiRequest("transferFunds", { fromId, toId, amount, description: desc })
+        .then(data => {
+          state = data;
+          renderUI();
+          form.reset();
+          showLoading(false);
+          showToast("تمت معالجة التحويل المالي الداخلي وتحديث الأرصدة");
+          switchTab('dashboard');
+        })
+        .catch(err => {
+          showLoading(false);
+          showToast("فشلت عملية التحويل: " + err.message, false);
+        });
+    }
+
+    // Helper functions
+    function getWalletName(id) {
+      if (!id) return '-';
+      const w = state.wallets.find(item => item.id === id);
+      return w ? w.name : id;
+    }
+
+    function formatCurrency(val) {
+      return Number(val).toLocaleString('ar-SA', { style: 'currency', currency: 'SAR' });
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('ar-SA', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+  </script>
+</body>
+</html>

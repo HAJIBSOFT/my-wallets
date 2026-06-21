@@ -171,13 +171,13 @@
           <div class="overflow-x-auto">
             <table class="w-full text-right border-collapse">
               <thead>
-                <tr class="bg-slate-50 border-b border-slate-100 text-slate-400 text-[11px] font-bold uppercase tracking-wider">
-                  <th class="p-5">التاريخ</th>
-                  <th class="p-5">النوع</th>
-                  <th class="p-5">المحفظة</th>
-                  <th class="p-5">الفئة التصنيفية</th>
-                  <th class="p-5">ملاحظات</th>
-                  <th class="p-5 text-left">المبلغ الاجمالي</th>
+                <tr class="bg-slate-50 border-b border-slate-100 text-slate-400 text-sm">
+                  <th class="p-4">التاريخ</th>
+                  <th class="p-4">نوع العملية</th>
+                  <th class="p-4">المحفظة</th>
+                  <th class="p-4">الفئة التصنيفية</th>
+                  <th class="p-4">ملاحظات</th>
+                  <th class="p-4 text-left">المبلغ الاجمالي</th>
                 </tr>
               </thead>
               <tbody id="recentTransactionsTable" class="text-slate-600">
@@ -188,7 +188,7 @@
         </div>
       </section>
 
-      <!-- 2. DEPOSIT TAB (صداقة وسهولة) -->
+      <!-- 2. DEPOSIT TAB -->
       <section id="tab-deposit" class="tab-content hidden max-w-xl mx-auto">
         <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 space-y-6">
           <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
@@ -284,18 +284,57 @@
         </div>
       </section>
 
-      <!-- 5. REPORTS & STATEMENT TAB (تحديث التصدير إلى PDF احترافي) -->
+      <!-- 5. REPORTS & STATEMENT TAB (تمت إعادة تصميم هذا التبويب بالكامل وتطويره) -->
       <section id="tab-reports" class="tab-content hidden space-y-6">
-        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <!-- شريط الفلترة المطور -->
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
           <div>
             <h2 class="text-lg font-extrabold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-magnifying-glass-chart text-emerald-600"></i>محرك كشف الحساب والتقارير المالية</h2>
-            <p class="text-xs text-slate-400">قم بتحليل ميزانيتك ومصروفاتك وصدر كشفا رسمياً بصيغة PDF</p>
+            <p class="text-xs text-slate-400">حلل ميزانيتك ومصروفاتك في فترة محددة وصدر كشفا رسمياً PDF</p>
           </div>
-          <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-            <select id="reportWalletFilter" onchange="renderStatementAndReport()" class="p-3.5 border border-slate-100 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-slate-700 bg-slate-50 text-sm"></select>
-            <button onclick="exportToPDF()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-5 py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-slate-900/10">
-              <i class="fa-solid fa-file-pdf text-rose-500 text-base"></i> تصدير كشف الحساب (PDF)
-            </button>
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 w-full xl:w-auto">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 mb-1">المحفظة</label>
+              <select id="reportWalletFilter" onchange="renderStatementAndReport()" class="w-full p-3 border border-slate-100 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-slate-700 bg-slate-50 text-xs h-[42px]"></select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 mb-1">من تاريخ</label>
+              <input type="date" id="reportFromDate" onchange="renderStatementAndReport()" class="w-full p-3 border border-slate-100 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-slate-700 bg-slate-50 text-xs h-[42px]">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 mb-1">إلى تاريخ</label>
+              <input type="date" id="reportToDate" onchange="renderStatementAndReport()" class="w-full p-3 border border-slate-100 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-slate-700 bg-slate-50 text-xs h-[42px]">
+            </div>
+            <div class="flex items-end">
+              <button onclick="exportToPDF()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold px-4 rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-slate-900/10 h-[42px]">
+                <i class="fa-solid fa-file-pdf text-rose-500 text-sm"></i> تصدير الكشف (PDF)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- بطاقات ملخص مالي مخصصة للتقرير المفلتر -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-white rounded-2xl p-5 border border-slate-100 flex justify-between items-center shadow-sm">
+            <div>
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">رصيد المحفظة الحالي</p>
+              <h4 class="text-xl font-black text-slate-800 mt-1" id="rep-wallet-balance">0.00 ر.س</h4>
+            </div>
+            <div class="text-slate-700 bg-slate-100 p-3 rounded-xl text-lg"><i class="fa-solid fa-wallet"></i></div>
+          </div>
+          <div class="bg-white rounded-2xl p-5 border border-slate-100 flex justify-between items-center shadow-sm">
+            <div>
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">إيداعات الفترة المحددة</p>
+              <h4 class="text-xl font-black text-emerald-600 mt-1" id="rep-total-deposits">0.00 ر.س</h4>
+            </div>
+            <div class="text-emerald-500 bg-emerald-50 p-3 rounded-xl text-lg"><i class="fa-solid fa-arrow-down-long"></i></div>
+          </div>
+          <div class="bg-white rounded-2xl p-5 border border-slate-100 flex justify-between items-center shadow-sm">
+            <div>
+              <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">مصروفات الفترة المحددة</p>
+              <h4 class="text-xl font-black text-rose-600 mt-1" id="rep-total-expenses">0.00 ر.س</h4>
+            </div>
+            <div class="text-rose-500 bg-rose-50 p-3 rounded-xl text-lg"><i class="fa-solid fa-arrow-up-long"></i></div>
           </div>
         </div>
 
@@ -307,7 +346,7 @@
               <canvas id="expensesChart"></canvas>
               <div id="noChartData" class="hidden absolute inset-0 flex flex-col items-center justify-center text-slate-400 bg-white rounded-3xl">
                 <i class="fa-solid fa-chart-line text-4xl mb-2 text-slate-300"></i>
-                <p class="text-xs font-semibold">لا يوجد مصروفات لتحليلها بيانياً</p>
+                <p class="text-xs font-semibold">لا يوجد مصروفات في هذه الفترة</p>
               </div>
             </div>
           </div>
@@ -364,56 +403,71 @@
     </main>
   </div>
 
-  <!-- Hidden Container dynamically built and styled exclusively for PDF generation -->
+  <!-- قالب تصدير كشف الحساب المطور والمصمم خصيصاً للتصدير الاحترافي PDF -->
   <div class="hidden">
     <div id="pdfPrintTemplate" dir="rtl" class="p-8 bg-white text-slate-800" style="font-family: 'Cairo', sans-serif;">
-      <!-- PDF Header -->
-      <div class="flex justify-between items-center border-b-2 border-emerald-600 pb-6 mb-6">
+      <!-- ترويسة ملف الـ PDF -->
+      <div class="flex justify-between items-center border-b-2 border-emerald-600 pb-5 mb-6">
         <div>
           <h1 class="text-2xl font-black text-emerald-700">مستشاري المالي</h1>
-          <p class="text-xs text-slate-400 mt-1">كشف حركة حساب مالي رسمي وموحد</p>
+          <p class="text-xs text-slate-400 mt-1">تقرير وكشف حركة حساب مالي رسمي وموثق</p>
         </div>
         <div class="text-left">
-          <p class="text-xs text-slate-400">تاريخ إصدار الكشف</p>
-          <p class="text-sm font-bold text-slate-700 mt-1" id="pdfDate"></p>
+          <p class="text-[9px] text-slate-400">تاريخ طباعة التقرير</p>
+          <p class="text-xs font-bold text-slate-700 mt-1" id="pdfPrintDate"></p>
         </div>
       </div>
 
-      <!-- Wallet info summary in PDF -->
-      <div class="bg-slate-50 rounded-2xl p-6 mb-8 grid grid-cols-3 gap-4 border border-slate-100">
+      <!-- معلومات الفلترة والفترة الزمنية -->
+      <div class="text-xs font-bold text-slate-600 mb-4 flex justify-between">
+        <span>كشف حساب: <span id="pdfWalletName" class="text-emerald-700 font-extrabold"></span></span>
+        <span>فترة الكشف: من <span id="pdfRangeFrom" class="text-slate-800"></span> إلى <span id="pdfRangeTo" class="text-slate-800"></span></span>
+      </div>
+
+      <!-- بطاقات الحسابات المالية داخل الـ PDF -->
+      <div class="bg-slate-50 rounded-2xl p-5 mb-6 grid grid-cols-3 gap-4 border border-slate-200">
         <div>
-          <p class="text-[10px] text-slate-400 font-bold">اسم المحفظة</p>
-          <p class="text-md font-bold text-slate-800 mt-1" id="pdfWalletName"></p>
+          <p class="text-[9px] text-slate-400 font-bold uppercase">رصيد المحفظة الحالي</p>
+          <p class="text-sm font-black text-slate-800 mt-1" id="pdfWalletBalance">0.00 ر.س</p>
         </div>
         <div>
-          <p class="text-[10px] text-slate-400 font-bold">إجمالي التدفقات المضافة</p>
-          <p class="text-md font-bold text-emerald-600 mt-1" id="pdfTotalIncoming"></p>
+          <p class="text-[9px] text-slate-400 font-bold uppercase">إجمالي إيداعات الفترة</p>
+          <p class="text-sm font-bold text-emerald-600 mt-1" id="pdfTotalIncoming">0.00 ر.س</p>
         </div>
         <div>
-          <p class="text-[10px] text-slate-400 font-bold">إجمالي التدفقات الخارجة</p>
-          <p class="text-md font-bold text-rose-600 mt-1" id="pdfTotalOutgoing"></p>
+          <p class="text-[9px] text-slate-400 font-bold uppercase">إجمالي مصروفات الفترة</p>
+          <p class="text-sm font-bold text-rose-600 mt-1" id="pdfTotalOutgoing">0.00 ر.س</p>
         </div>
       </div>
 
-      <!-- Ledger Table inside PDF -->
+      <!-- قسم ملخص المصروفات حسب التصنيف (جديد بالكامل في الـ PDF) -->
+      <div id="pdfCategoryBreakdownSection" class="mb-6">
+        <h3 class="text-xs font-bold text-slate-700 mb-2.5">ملخص توزيع المصروفات حسب التصنيف للفترة المحددة:</h3>
+        <div class="grid grid-cols-4 gap-2 text-center" id="pdfCategoryGrid">
+          <!-- الخلاصة التصنيفية تضاف برمجياً هنا -->
+        </div>
+      </div>
+
+      <!-- جدول تفاصيل العمليات المالية -->
+      <h3 class="text-xs font-bold text-slate-700 mb-2.5">تفاصيل العمليات المالية المسجلة:</h3>
       <table class="w-full text-right border-collapse">
         <thead>
-          <tr class="bg-emerald-700 text-white text-xs font-bold">
-            <th class="p-3 border border-emerald-600 rounded-r-lg">التاريخ</th>
-            <th class="p-3 border border-emerald-600">النوع</th>
-            <th class="p-3 border border-emerald-600">التصنيف</th>
-            <th class="p-3 border border-emerald-600">البيان والملاحظات</th>
-            <th class="p-3 border border-emerald-600 text-left rounded-l-lg">المبلغ</th>
+          <tr class="bg-emerald-700 text-white text-[9px] font-bold">
+            <th class="p-2 border border-emerald-600 rounded-r-lg">التاريخ</th>
+            <th class="p-2 border border-emerald-600">النوع</th>
+            <th class="p-2 border border-emerald-600">التصنيف</th>
+            <th class="p-2 border border-emerald-600">البيان والملاحظات</th>
+            <th class="p-2 border border-emerald-600 text-left rounded-l-lg">المبلغ</th>
           </tr>
         </thead>
-        <tbody id="pdfTableBody" class="text-slate-700 text-xs">
-          <!-- Filled dynamically during PDF generation -->
+        <tbody id="pdfTableBody" class="text-slate-700 text-[9px]">
+          <!-- تعبأ آلياً أثناء التصدير -->
         </tbody>
       </table>
 
-      <!-- Footer for PDF -->
-      <div class="mt-12 pt-6 border-t border-slate-100 text-center text-[10px] text-slate-400">
-        <p>تم استخراج هذا الكشف آلياً ومزامنته عبر النظام المالي المرتبط بحساب Google Sheets الخاص بك.</p>
+      <!-- ذيل صفحة الـ PDF -->
+      <div class="mt-12 pt-5 border-t border-slate-100 text-center text-[10px] text-slate-400">
+        <p>تم استخراج هذا التقرير آلياً ومزامنته عبر السكربت البرمجي المباشر مع حساب Google Sheets المخصص لك.</p>
       </div>
     </div>
   </div>
@@ -574,7 +628,6 @@
       document.getElementById('stat-total-expenses').textContent = formatCurrency(totalExpenses);
     }
 
-    // High quality dynamic card palette colors
     const CARD_GRADIENTS = [
       "from-slate-900 to-slate-800",
       "from-emerald-700 to-teal-900",
@@ -684,25 +737,69 @@
       });
     }
 
+    // [تحديث برمجي حصري لقسم التقارير] ليتناسب مع الفلترة بالتواريخ وعرض إحصائيات المحفظة المحددة
     function renderStatementAndReport() {
       const walletId = document.getElementById('reportWalletFilter').value;
+      const fromDateStr = document.getElementById('reportFromDate').value;
+      const toDateStr = document.getElementById('reportToDate').value;
+      
       const statementTitle = document.getElementById('statementWalletName');
       const tbody = document.getElementById('statementTableBody');
       tbody.innerHTML = '';
 
       statementTitle.textContent = walletId === "ALL" ? "جميع المحافظ الموحدة" : getWalletName(walletId);
 
+      // الفلترة بالتواريخ وبمعرف المحفظة معاً
       const filteredTx = state.transactions.filter(tx => {
-        if (walletId === "ALL") return true;
-        return tx.fromWallet === walletId || tx.toWallet === walletId;
+        const matchesWallet = (walletId === "ALL") || (tx.fromWallet === walletId || tx.toWallet === walletId);
+        if (!matchesWallet) return false;
+
+        if (fromDateStr && tx.date < fromDateStr) return false;
+        if (toDateStr && tx.date > toDateStr) return false;
+
+        return true;
       });
 
+      // حساب الرصيد الفعلي للمحفظة المحددة (لا يتأثر بفلترة التاريخ ليعبر عن الكاش الحقيقي الحالي)
+      let currentBalance = 0;
+      if (walletId === "ALL") {
+        state.wallets.forEach(w => currentBalance += w.balance);
+      } else {
+        const selectedWallet = state.wallets.find(w => w.id === walletId);
+        if (selectedWallet) {
+          currentBalance = selectedWallet.balance;
+        }
+      }
+
+      // حساب إجمالي الإيداعات والمصروفات للفترة المحددة
+      let periodIncoming = 0;
+      let periodOutgoing = 0;
+
+      filteredTx.forEach(tx => {
+        if (walletId === "ALL") {
+          if (tx.type === 'إيداع') periodIncoming += tx.amount;
+          if (tx.type === 'مصروف') periodOutgoing += tx.amount;
+        } else {
+          if (tx.type === 'إيداع' || (tx.type === 'تحويل' && tx.toWallet === walletId)) {
+            periodIncoming += tx.amount;
+          } else if (tx.type === 'مصروف' || (tx.type === 'تحويل' && tx.fromWallet === walletId)) {
+            periodOutgoing += tx.amount;
+          }
+        }
+      });
+
+      // عرض المبالغ في بطاقات الملخص بقسم التقارير
+      document.getElementById('rep-wallet-balance').textContent = formatCurrency(currentBalance);
+      document.getElementById('rep-total-deposits').textContent = formatCurrency(periodIncoming);
+      document.getElementById('rep-total-expenses').textContent = formatCurrency(periodOutgoing);
+
       if (filteredTx.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400 font-medium">لا توجد عمليات مالية مسجلة لهذه المحفظة.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-400 font-medium">لا توجد عمليات مسجلة في هذه الفترة المحددة.</td></tr>`;
         updateChart({});
         return;
       }
 
+      // بناء جدول كشف الحساب في الواجهة
       filteredTx.forEach(tx => {
         let txType = '';
         let amtClass = '';
@@ -728,10 +825,17 @@
           </tr>`;
       });
 
+      // حساب التصنيفات وتجهيز مخطط الدونات
       const categoryTotals = {};
       filteredTx.forEach(tx => {
-        if (tx.type === 'مصروف' || (tx.type === 'تحويل' && tx.fromWallet === walletId)) {
-          categoryTotals[tx.category] = (categoryTotals[tx.category] || 0) + tx.amount;
+        if (walletId === "ALL") {
+          if (tx.type === 'مصروف') {
+            categoryTotals[tx.category] = (categoryTotals[tx.category] || 0) + tx.amount;
+          }
+        } else {
+          if (tx.type === 'مصروف' || (tx.type === 'تحويل' && tx.fromWallet === walletId)) {
+            categoryTotals[tx.category] = (categoryTotals[tx.category] || 0) + tx.amount;
+          }
         }
       });
 
@@ -787,28 +891,56 @@
       });
     }
 
-    // Export Statement to a Professional PDF using html2pdf
+    // [تحديث برمجي حصري لعملية تصدير الـ PDF] لإظهار الرصيد الحالي، مصروفات وإيداعات الفترة، والتصنيفات
     function exportToPDF() {
       const walletId = document.getElementById('reportWalletFilter').value;
+      const fromDateStr = document.getElementById('reportFromDate').value;
+      const toDateStr = document.getElementById('reportToDate').value;
+
+      // الفلترة بالتواريخ والمحافظ لملف PDF
       const filteredTx = state.transactions.filter(tx => {
-        if (walletId === "ALL") return true;
-        return tx.fromWallet === walletId || tx.toWallet === walletId;
+        const matchesWallet = (walletId === "ALL") || (tx.fromWallet === walletId || tx.toWallet === walletId);
+        if (!matchesWallet) return false;
+
+        if (fromDateStr && tx.date < fromDateStr) return false;
+        if (toDateStr && tx.date > toDateStr) return false;
+
+        return true;
       });
 
       if (filteredTx.length === 0) {
-        showToast("لا توجد عمليات لتصديرها في ملف الـ PDF المنسق", false);
+        showToast("لا توجد عمليات ضمن الفلترة المحددة لتصديرها في ملف الـ PDF", false);
         return;
       }
 
       showLoading(true);
 
-      // Populate hidden PDF template dynamically
-      document.getElementById('pdfDate').textContent = new Date().toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' });
+      // تحديد وتعبئة تاريخ الطباعة
+      document.getElementById('pdfPrintDate').textContent = new Date().toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' });
+      
       const walletName = walletId === "ALL" ? "جميع المحافظ الموحدة" : getWalletName(walletId);
       document.getElementById('pdfWalletName').textContent = walletName;
 
-      let incoming = 0;
-      let outgoing = 0;
+      // تحديد نصوص الفترة الزمنية
+      document.getElementById('pdfRangeFrom').textContent = fromDateStr ? formatDate(fromDateStr) : "البداية";
+      document.getElementById('pdfRangeTo').textContent = toDateStr ? formatDate(toDateStr) : "تاريخ اليوم";
+
+      // 1. الرصيد الحالي الفعلي للمحفظة في التصدير
+      let currentBalance = 0;
+      if (walletId === "ALL") {
+        state.wallets.forEach(w => currentBalance += w.balance);
+      } else {
+        const selectedWallet = state.wallets.find(w => w.id === walletId);
+        if (selectedWallet) {
+          currentBalance = selectedWallet.balance;
+        }
+      }
+      document.getElementById('pdfWalletBalance').textContent = formatCurrency(currentBalance);
+
+      // 2. حساب إجماليات تدفقات الفترة لملف PDF وتصنيفاتها
+      let periodIncoming = 0;
+      let periodOutgoing = 0;
+      const categoryTotals = {};
 
       const pdfTbody = document.getElementById('pdfTableBody');
       pdfTbody.innerHTML = '';
@@ -821,27 +953,48 @@
         if (tx.type === 'إيداع' || (tx.type === 'تحويل' && tx.toWallet === walletId)) {
           txTypeLabel = "إيداع مالي";
           amtSign = '+';
-          incoming += tx.amount;
+          periodIncoming += tx.amount;
         } else if (tx.type === 'مصروف' || (tx.type === 'تحويل' && tx.fromWallet === walletId)) {
           txTypeLabel = "مصروف مالي";
           amtSign = '-';
-          outgoing += tx.amount;
+          periodOutgoing += tx.amount;
+          
+          // تجميع مبالغ تصنيفات المصروفات
+          categoryTotals[tx.category] = (categoryTotals[tx.category] || 0) + tx.amount;
         }
 
         pdfTbody.innerHTML += `
           <tr class="${rowClass}">
             <td class="p-3 border-b border-slate-100">${formatDate(tx.date)}</td>
             <td class="p-3 border-b border-slate-100 font-bold">${txTypeLabel}</td>
-            <td class="p-3 border-b border-slate-100">${tx.category}</td>
+            <td class="p-3 border-b border-slate-100"><span style="background-color: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-weight: bold;">${tx.category}</span></td>
             <td class="p-3 border-b border-slate-100 text-slate-500">${tx.description || '-'}</td>
             <td class="p-3 border-b border-slate-100 font-bold text-left">${amtSign} ${tx.amount.toFixed(2)} ر.س</td>
           </tr>`;
       });
 
-      document.getElementById('pdfTotalIncoming').textContent = formatCurrency(incoming);
-      document.getElementById('pdfTotalOutgoing').textContent = formatCurrency(outgoing);
+      document.getElementById('pdfTotalIncoming').textContent = formatCurrency(periodIncoming);
+      document.getElementById('pdfTotalOutgoing').textContent = formatCurrency(periodOutgoing);
 
-      // Call html2pdf API to save PDF locally
+      // 3. بناء وتصميم قسم توزيع المصروفات حسب التصنيف في ملف PDF
+      const pdfCatGrid = document.getElementById('pdfCategoryGrid');
+      pdfCatGrid.innerHTML = '';
+      const catKeys = Object.keys(categoryTotals);
+
+      if (catKeys.length > 0) {
+        document.getElementById('pdfCategoryBreakdownSection').classList.remove('hidden');
+        catKeys.forEach(cat => {
+          pdfCatGrid.innerHTML += `
+            <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 6px; border-radius: 8px;">
+              <p style="font-size: 8px; color: #64748b; margin: 0; font-weight: bold;">${cat}</p>
+              <p style="font-size: 10px; color: #0f172a; margin: 2px 0 0 0; font-weight: 800;">${categoryTotals[cat].toFixed(2)} ر.س</p>
+            </div>`;
+        });
+      } else {
+        document.getElementById('pdfCategoryBreakdownSection').classList.add('hidden');
+      }
+
+      // تنفيذ التصدير المباشر والمحاذى باستخدام مكتبة html2pdf
       const element = document.getElementById('pdfPrintTemplate');
       const opt = {
         margin:       10,
@@ -851,7 +1004,6 @@
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
-      // Generate and save PDF, then hide loading overlay
       html2pdf().from(element).set(opt).save().then(() => {
         showLoading(false);
         showToast("تم توليد وتحميل كشف الحساب بنجاح كملف PDF مخصص");
